@@ -1,9 +1,10 @@
 # Invariants
 
-An **invariant** is a condition that must always true hold true at a particular point in a program. Correct invariants are always true when they are supposed to be, and are said to be **maintained** by the program. Incorrect invariants are sometimes false, and are said to be **violated**. Invariants allow programmers to formally prove their programs are bug-free. Invariants are also an incredibly powerful tool for program design. Expert programmers often state invariants first, then write code to maintain them. For them, the program is the proof of correcntess, not the code.
+## Introduction to Invariants
+
+An **invariant** is a condition that must always hold true at a particular point in a program. Correct invariants are always true when they are supposed to be, and are said to be **maintained** by the program. Incorrect invariants are sometimes false, and are said to be **violated**. Invariants allow programmers to formally prove their programs are bug-free. Invariants are also an incredibly powerful tool for program design. Expert programmers often state invariants first, then write code to maintain them. For them, the program is the proof of correctness, not the code.
 
 Consider the following `max` function that computes the maximum value in a non-empty input list `arr`:
-
 ```py
 def max(arr: list[int]) -> int:
     """
@@ -28,13 +29,90 @@ There are four key invariants in this program:
 * Invariant A states what the `max` function returns. Such invariants are known as **postconditions** since they describe the program state _after_ the function returns. The function body is responsible for maintaining all postconditions.
 * Invariant B states what the `max` function takes as an argument. Such invariants are known as **preconditions** since they describe the program state _before_ the function is called. If any precondition is violated, the function may behave incorrectly (i.e. the postconditions may be violated). For the `max` function, if the input list is empty, violating the precondition, the function will crash with an `IndexError` since the line `max_so_far = arr[0]` indexes `arr` out-of-bounds. The caller of the function is responsible for maintaining all preconditions.
 * Invariant C states what the `max_so_far` variable represents at the start of each iteration of the loop. Such invariants are known as **loop invariants** since they describe the program state _before_ and _during_ iteration. Variable initialization and the loop body are responsible for maintaining all loop invariants.
-* Invariant D states what the `max_so_far` variable represents after the loop exits. Such invariants are known as **termination invariants** since they describe the program state _after_ iteration. Termination invariants are a direct consequence of loop invariants. For the `max` funciton, the termination invariant is simply the loop invariant with `i = n`. In general, loops build towards desirable termination invariants.
+* Invariant D states what the `max_so_far` variable represents after the loop exits. Such invariants are known as **termination invariants** since they describe the program state _after_ iteration. Termination invariants are a direct consequence of loop invariants. For the `max` function, the termination invariant is simply the loop invariant with `i = n`. In general, loops build towards desirable termination invariants.
 
 These invariants work together to ensure the `max` function works correctly. First, the precondition (Invariant B) guarantees `arr` is non-empty so the line `max_so_far = arr[0]` will execute successfully. Second, the loop invariant (Invariant C) ensures `max_so_far` is the maximum value in an expanding prefix of `arr`, so that by the end of the loop, `max_so_far` is the maximum in the entire array `arr` and Invariant D is maintained. Since `max_so_far` is returned and it is the maximum value in `arr`, Invariant A is maintained and the function works correctly.
 
-At first, invariants may feel abstract, pointless, and/or difficult. Like anything, learning to use invariants requires intense, sustained practice. Invariants are deep topic and can take years to mastery. However, I assure you, learning invariants will radically transform your programming ability. 
+These invariants are all useful invariants. A **useful** invariant describes what a variable or function call represents, not just a property it happens to have. Moreover, that meaning is required for reasoning about the correctness of the program. For example, the invariant `max_so_far >= arr[0]` is true, but not useful. It provides no information about `max_so_far`'s purpose.
 
-## Example
+At first, invariants may feel abstract, pointless, and/or difficult. Like anything, learning to use invariants requires intense, sustained practice. Invariants are a deep topic and can take years to mastery. However, I assure you, learning invariants will radically transform your programming ability. 
+
+### Problem
+
+Consider the following `min` function that computes the minimum value in a non-empty input list `arr`:
+```py
+def min(arr: list[int]) -> int:
+    """
+    Invariant 1:
+    `min(arr)` is the minimum value in non-empty input list `arr`.
+    """
+    # Invariant 2:
+    # `arr` is a non-empty list.
+    n = len(arr)
+    # Invariant 3:
+    # `min_so_far` is the minimum value in `arr[i:]`.
+    min_so_far = arr[n - 1]
+    # Invariant 4:
+    # `i` is largest index not yet processed.
+    for i in range(n - 2, 0, -1):
+        if arr[i] < min_so_far:
+            min_so_far = arr[i]
+    # Invariant 5:
+    # `min_so_far` is the minimum value in `arr[0:]` which is `arr`.
+    return min_so_far
+```
+
+Identify the kind of each invariant annotated in the `min` function, and whether it is maintained, useful, both, or neither. 
+<details>
+    <summary>Show solution</summary>
+
+* Invariant 1 is a postcondition. It is useful since it describes exactly what the function should compute. However, it is not maintained since Invariant 5 is not maintained.
+* Invariant 2 is a precondition. It is useful since it describes exactly what `arr` represents, beyond what is stated in the type hint (e.g. non-empty). It may or may not be maintained since the caller is responsible for maintaining preconditions.
+* Invariant 3 is a loop invariant. It is useful since it describes exactly what `min_so_far`  represents. It is maintained at the _end_ of each iteration of the loop. 
+* Invariant 4 is a loop invariant. It is not useful since the order in which the elements of `arr` are processed does not impact the end result. It is maintained since the indices are processed largest to smallest.
+* Invariant 5 is a termination invariant. It is useful since it describes exactly what `min_so_far` represents on termination. However, it is not maintained since `arr[0]` is never processed, and so the loop terminates with `min_so_far` as the minimum value in `arr[1:]`.
+
+</details>
+
+### Problem
+
+Consider the following `sum` function that computes the sum of an input list `arr`:
+```py
+def sum(arr: list[int]) -> int:
+    """
+    ???
+    """
+    # ???
+    n = len(arr)
+    # ???
+    sum_so_far = 0
+    for i in range(n):
+        sum_so_far += arr[i]
+    # ???
+    return sum_so_far 
+```
+
+Annotate the `sum` function with _useful_ invariants like the `max` function. 
+<details>
+    <summary>Show solution</summary>
+
+There are a few differences between the `sum` and `max` functions. First, the `sum` function does not have a key precondition like the `max` function. The list need not be non-empty. A precondition adds no additional information beyond the type hint, and so should not be stated. Second, the postcondition, loop invariant, and termination invariant are stated in terms of sums, not maxes. 
+```py
+def sum(arr: list[int]) -> int:
+    """
+    `sum(arr)` is the sum of all values in list `arr`.
+    """
+    n = len(arr)
+    # `sum_so_far` is the sum of all values in `arr[:i]`.
+    sum_so_far = 0
+    for i in range(n):
+        sum_so_far += arr[i]
+    # `sum_so_far` is the sum of all values in `arr[:n]`, which is `arr`.
+    return sum_so_far 
+```
+</details>
+
+## Program Design with Invariants 
 
 Consider [1672. Richest Customer Wealth](https://leetcode.com/problems/richest-customer-wealth/description/). Read the problem description and work through the provided examples by hand. We will work backwards from desirable invariants to build a solution.
 
