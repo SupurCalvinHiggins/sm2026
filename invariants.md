@@ -44,7 +44,7 @@ These invariants work together to ensure the `max` function works correctly. Fir
 These invariants are all useful invariants. A **useful** invariant describes what a variable or function call represents, not just a property it happens to have. Moreover, that meaning is required for reasoning about the correctness of the program. For example, the invariant `max_so_far >= arr[0]` is true, but not useful. It provides no information about `max_so_far`'s purpose.
 
 
-At first, invariants may feel abstract, pointless, and/or difficult. Like anything, learning to use invariants requires intense, sustained practice. Invariants are a deep topic and can take years to mastery. However, I assure you, learning invariants will radically transform your programming ability. 
+At first, invariants may feel abstract, pointless, and/or difficult. Like anything, learning to use invariants requires intense, sustained practice. Invariants are a deep topic and take years to mastery. However, I assure you, learning invariants will radically transform your programming ability. 
 
 ### Problem
 
@@ -123,16 +123,17 @@ def sum(arr: list[int]) -> int:
 
 ## Program Design with Invariants 
 
-At a high-level, invariant-driven program design follows two steps:
-1. State a desirable invariant. Think of this as what the current subproblem is but not necessarily how to solve it. This usually means stating a postcondition or a termination invariant. Write as much code as possible to directly maintain this invariant.
-2. State an invariant that helps maintain the original invariant. Think of this as how to solve the current subproblem. This is usually a loop invariant. Write as much code as possible to directly maintain this invariant.
-3. Repeat.
+At a high-level, invariant-driven program design follows three steps:
+1. State preconditions and postconditions on the original function. Think of this as understanding the overall problem statement.
+2. State a desirable invariant. Think of this as what the current subproblem is but not necessarily how to solve it. This usually means stating a postcondition or a termination invariant. Write as much code as possible to directly maintain this invariant.
+3. State an invariant that helps maintain the original invariant. Think of this as how to solve the current subproblem. This is usually a loop invariant. Write as much code as possible to directly maintain this invariant.
+4. Repeat from Step 2.
 
 Loop invariants are typically the most difficult to state. These invariants can often be framed in terms of prefixes, suffixes or subarrays. A **prefix** is a contiguous portion of an array that starts with the first element (e.g. `arr[:i]`). The loop invariant in the `max` function above is defined in terms of a prefix of `arr`. A **suffix** is a contiguous portion of an array that ends with the last element (e.g. `arr[i:]`). The loop invariant in the `min` function above is defined in terms of a suffix of `arr`. Usually, prefix and suffix invariants are interchangable. For example, both the `min` and `max` functions can be written using a prefix (scan left to right) or suffix (scan right to left) invariant. The choice is down to personal preference. A **subarray** is any contiguous portion of an array (e.g. `arr[i:j]`). Subarray invariants can sometimes, but not always, be replaced with prefix or suffix invariants. Any prefix or suffix invariant is a subarray invariant since prefixes and suffixes are subarrays.
 
-Read [1672. Richest Customer Wealth](https://leetcode.com/problems/richest-customer-wealth/description/) and work through the provided examples by hand. We will use invariants to design a solution.
+Read [1672. Richest Customer Wealth](https://leetcode.com/problems/richest-customer-wealth/description/) and work through the provided input/output examples by hand. We will solve this problem with invariants.
 
-State preconditions and postconditions. These come directly from the problem statement.
+Starting with Step 1, state preconditions and postconditions from the problem statement.
 ```py
 class Solution:
     def maximumWealth(self, accounts: List[List[int]]) -> int:
@@ -142,7 +143,7 @@ class Solution:
         # `accounts` is a non-empty positive grid.
 ```
 
-Define a desirable termination invariant. This comes directly from the postcondition.
+For Step 2, define a desirable termination invariant. In this case, the termination invariant comes directly from the postcondition.
 ```py
 class Solution:
     def maximumWealth(self, accounts: List[List[int]]) -> int:
@@ -155,7 +156,9 @@ class Solution:
         return max_wealth_so_far
 ```
 
-Define a loop invariant that will eventually transform into the termination invariant. This will use the prefix `accounts[:i]` (i.e. all values in `accounts` up to but not including `accounts[i]`). After the loop terminates, the prefix will contain all values (i.e. `accounts[:m] == accounts`), and so the termination invariant will be maintained. Initializing `max_wealth_so_far` to `0` is correct since the precondition states all accounts contain positive wealth and there will always be at least one account. This means `max_wealth_so_far` will always be replaced with the wealth of `accounts[0]` after the first iteration.
+For Step 3, define a loop invariant that will eventually transform into the termination invariant. If we compute the maximum wealth of all prefixes of `accounts`, we eventually compute the maximum wealth over all accounts. More formally, we maintain the maximum wealth in the prefix `accounts[:i]` (i.e. all values in `accounts` up to but not including `accounts[i]`). After the loop terminates, the prefix will contain all accounts (i.e. `accounts[:m] == accounts`), and so we will have the maximum wealth over all accounts. A suffix invariant also works here but iterating in reverse order might be less natural for this problem. 
+
+Correct variable initialization for loop invariants requires care. In this case, initializing `max_wealth_so_far` to `0` is correct since the precondition states all accounts contain positive wealth and there will always be at least one account. This means `max_wealth_so_far` will always be replaced with the wealth of `accounts[0]` after the first iteration. However, if the accounts could contain negative wealth, zero initialization would be incorrect since the maximum wealth might be negative.
 ```py
 class Solution:
     def maximumWealth(self, accounts: List[List[int]]) -> int:
@@ -172,7 +175,7 @@ class Solution:
         return max_wealth_so_far
 ```
 
-Fill in the loop body to maintain the loop invariant. Again, start with a desirable termination invariant. 
+As Step 3 is complete, repeat from Step 2, focusing on maintaining the loop invariant. Start with a desirable termination invariant. In this case, we must know the wealth of the current account to maintain the invariant on `max_wealth_so_far`. 
 ```py
 class Solution:
     def maximumWealth(self, accounts: List[List[int]]) -> int:
@@ -192,8 +195,9 @@ class Solution:
         return max_wealth_so_far
 ```
 
-Define a loop invariant that will eventually transform into the termination invariant. Again, 
-the invariant can be stated in terms of an array prefix. After the loop terminates, `wealth_so_far` will be the total wealth in `accounts[i][:n] == accounts[i]`, which is exactly what we want. Initially, the total wealth in `accounts[i][:0] == []` is `0`, so `wealth_so_far` must start at `0`.
+For Step 3, define a loop invariant that will eventually transform into the termination invariant. If we compute the total wealth of all prefixes of `accounts[i]`, we eventually compute the wealth in `accounts[i]`. More formally, we maintain the total wealth in the prefix `accounts[i][:j]` (i.e. all values in `accounts[i]` up to but not including `accounts[i][j]`). After the loop terminates, the prefix will contain the entire list (i.e. `accounts[i][:n] == accounts[i]`), and so we will have the total wealth. Again, although the invariant can be stated in terms of a prefix or a suffix, we opt for a prefix. 
+
+Again, variable initialization requires care. In this case, the total wealth in `accounts[i][:0] == []` is `0`, so `wealth_so_far` must start at `0`. Unlike before, this is always correct regardless of negative wealth. The sum of nothing is defined as zero while the maximum of nothing is not defined. This is why initializing `max_wealth_so_far` requires a careful argument relying on the positive wealth precondition while `wealth_so_far` follows directly from the invariant.
 ```py
 class Solution:
     def maximumWealth(self, accounts: List[List[int]]) -> int:
@@ -217,5 +221,108 @@ class Solution:
         return max_wealth_so_far
 ```
 
-TODO:
-3. problems: invariant -> code, invariant -> next invariant, full problem
+### Problem
+
+Consider the following two `rfind` functions that find the rightmost occurence of `target` in an input list `arr`: 
+```py
+def rfind(arr: list[int], target: int) -> int:
+    """
+    `rfind(arr)` is rightmost occurence of `target` in `arr`. `target` must occur at least in `arr`.
+    """
+    n = len(arr)
+    # `target` occurs at least once in `arr`.
+    # `rightmost_so_far` is the rightmost occurence of `target` in `arr[:i]` (prefix).
+    ...
+    # `rightmost_so_far` is the rightmost occurence of `target` in `arr`.
+    return rightmost_so_far
+
+
+def rfind(arr: list[int], target: int) -> int:
+    """
+    `rfind(arr)` is rightmost occurence of `target` in `arr`. `target` must occur at least in `arr`.
+    """
+    n = len(arr)
+    # `target` occurs at least once in `arr`.
+    # `rightmost_so_far` is the rightmost occurence of `target` in `arr[i:]` (suffix).
+    ...
+    # `rightmost_so_far` is the rightmost occurence of `target` in `arr`.
+    return rightmost_so_far
+```
+
+Complete both functions so that the invariants are maintained.
+<details>
+    <summary>Show solution</summary>
+
+For both functions, initialization is tricky. Since `target` occurs at least once in `arr`, we can set `rightmost_so_far` to `-1` since this will be further left than all valid indices. For the first function, iterate in left to right order to compute prefixes. For the second function, iterate in right to left order to compute suffixes.
+```py
+def rfind(arr: list[int], target: int) -> int:
+    """
+    `rfind(arr)` is rightmost occurence of `target` in `arr`. `target` must occur at least in `arr`.
+    """
+    n = len(arr)
+    # `target` occurs at least once in `arr`.
+    # `rightmost_so_far` is the rightmost occurence of `target` in `arr[:i]` (prefix).
+    rightmost_so_far = -1
+    for i in range(n):
+        # Note:
+        # Just `arr[i] == target` also works as the condition. Since `i` is increasing,
+        # whenever we find a new occurence of `target`, it is always the rightmost.
+        if arr[i] == target and i > rightmost_so_far:
+            rightmost_so_far = i
+    # `rightmost_so_far` is the rightmost occurence of `target` in `arr`.
+    return rightmost_so_far
+
+
+def rfind(arr: list[int], target: int) -> int:
+    """
+    `rfind(arr)` is rightmost occurence of `target` in `arr`. `target` must occur at least in `arr`.
+    """
+    n = len(arr)
+    # `target` occurs at least once in `arr`.
+    # `rightmost_so_far` is the rightmost occurence of `target` in `arr[i:]` (suffix).
+    rightmost_so_far = -1
+    for i in range(n - 1, -1, -1):
+        # Note:
+        # Just `arr[i] == target and rightmost_so_far == -1` also works as the condition. 
+        # Since `i` is decreasing, the first occurence of `target` is always the rightmost.
+        if arr[i] == target and i > rightmost_so_far:
+            rightmost_so_far = i
+    # `rightmost_so_far` is the rightmost occurence of `target` in `arr`.
+    return rightmost_so_far
+```
+
+</details>
+
+### Problem
+
+Consider the following `product` function that computes the product of an input list `arr`:
+```py
+def product(arr: list[int]) -> int:
+    """
+    `product(arr)` is the product of all values in list `arr`.
+    """
+    n = len(arr)
+    ...
+    # `product_so_far` is the product of all values in `arr`.
+    return product_so_far
+```
+
+Complete Step 3 for the `product` function. 
+<details>
+    <summary>Show solution</summary>
+
+If we compute the product of all prefixes of `arr`, then eventually we compute the product of `arr`. Therefore, if we maintain that `product_so_far` is the product of `arr[:i]`, we maintain the termination invariant. The product of zero values is `1`, and so, since `product_so_far` is the product of `arr[:0] == []` on the first iteration, `product_so_far` must start at `1`.
+```py
+def product(arr: list[int]) -> int:
+    """
+    `product(arr)` is the product of all values in list `arr`.
+    """
+    n = len(arr)
+    # `product_so_far` is the product of all values in `arr[:i]`.
+    product_so_far = 1
+    for i in range(n):
+        product_so_far *= arr[i]
+    # `product_so_far` is the product of all values in `arr`.
+    return product_so_far
+```
+</details>
