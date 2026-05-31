@@ -74,7 +74,7 @@ Although the examples use `acc` for consistency, real code should use more meani
 
 The reduce pattern applies when the problem or subproblem requires computing a single value from a list.
 
-### Problem
+### Problem A
 
 Complete the following `min` function:
 ```py
@@ -110,7 +110,7 @@ def min(arr: list[int]) -> int:
 ```
 </details>
 
-### Problem
+### Problem B
 
 Complete this `contains` function, following the reduce pattern:
 ```py
@@ -156,3 +156,34 @@ def contains(arr: list[int], target: int) -> bool:
 
 </details>
 
+### Problem C
+
+Complete [2798. Number of Employees Who Met the Target](https://leetcode.com/problems/number-of-employees-who-met-the-target/description/) with the reduce pattern.
+
+### Problem D
+
+Complete [2678. Number of Senior Citizens](https://leetcode.com/problems/number-of-senior-citizens/description/) with the reduce pattern.
+
+### Problem E
+
+Complete [1450. Number of Students Doing Homework at a Given Time](https://leetcode.com/problems/number-of-students-doing-homework-at-a-given-time/description/) with the reduce pattern.
+
+### Problem F
+
+Complete [2057. Smallest Index With Equal Value](https://leetcode.com/problems/smallest-index-with-equal-value/description/) with the reduce pattern.
+
+### Problem G
+
+Complete [2114. Maximum Number of Words Found in Sentences](https://leetcode.com/problems/maximum-number-of-words-found-in-sentences/description/) with the reduce pattern.
+
+### Problem H
+
+Complete [2923. Find Champion I](https://leetcode.com/problems/find-champion-i/description/) with the reduce pattern.
+
+### Problem I
+
+Complete [2535. Difference Between Element Sum and Digit Sum of an Array](https://leetcode.com/problems/difference-between-element-sum-and-digit-sum-of-an-array/description/) with the reduce pattern.
+
+### Problem J
+
+Complete [414. Third Maximum Number](https://leetcode.com/problems/third-maximum-number/description/) with the reduce pattern.
